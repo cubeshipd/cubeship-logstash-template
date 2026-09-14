@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://cubeship.dev/schema/template/v1.json
 version: 1
-# The first release that gives a volume to the user its image runs as;
+# The first release that publishes Beats and gives a volume to the user its image runs as;
 # Logstash runs as 1000 and cannot write to one owned by root.
-minCubeship: "0.7.0"
+minCubeship: "0.7.2"
 project: logstash
 
 inputs:
@@ -31,6 +31,13 @@ inputs:
   - key: elasticsearchPassword
     type: secret
     label: That user's password
+  - key: beatsPort
+    type: number
+    label: The port Beats answers on
+    help: Choose a port from 1024 to 65535, and open it in your provider's firewall too.
+    default: 5044
+    min: 1024
+    max: 65535
 
 apps:
   - key: pipeline
@@ -47,6 +54,9 @@ apps:
     # answers without either, is not on the port a check probes.
     domains:
       - host: ${input.domain}
+    tcp:
+      - port: 5044
+        host: ${input.beatsPort}
     volumes:
       - path: /usr/share/logstash/data
     # The heap is 1 GiB, from the image's jvm.options.

@@ -5,8 +5,8 @@ pipeline: it takes in logs and events, parses and enriches them, and ships
 them to Elasticsearch.
 
 This template installs one Logstash on a Cubeship instance, taking events over
-HTTP on a domain and over Beats from apps on the same instance, and writing
-them to Elasticsearch. It pairs with the
+HTTP on a domain and over Beats on a TCP port, and writing them to Elasticsearch.
+It pairs with the
 [Elasticsearch template](https://github.com/cubeshipd/cubeship-elasticsearch-template).
 
 ## What it creates
@@ -15,7 +15,7 @@ them to Elasticsearch. It pairs with the
   in this repository. Its HTTP input answers on the domain you choose; its
   queue is kept in a volume at `/usr/share/logstash/data`.
 
-It needs Cubeship 0.7.0 or newer, **an admin to install it** — the app is
+It needs Cubeship 0.7.2 or newer, **an admin to install it** — the app is
 built on the instance, and only admins build — and an Elasticsearch to write
 to.
 
@@ -38,6 +38,7 @@ example's place. To change what Logstash does, edit that file — see
 | Where Elasticsearch answers | Its internal address. The default is the Elasticsearch template's, installed with its suggested names; the address is on the Elasticsearch app's page in the dashboard. |
 | The Elasticsearch user Logstash writes as | `elastic`, or better the user from [A user for Logstash](#a-user-for-logstash). |
 | That user's password | Its password. |
+| The port Beats answers on | `5044` by default. Choose a port from `1024` to `65535`, and open it in your provider's firewall too. |
 
 ## Sending events
 
@@ -55,20 +56,27 @@ other content type becomes one event whose `message` is the body. Logstash
 answers `200 ok` once the event is in its queue. A request without the
 credentials is answered `401`, whatever its method or path.
 
-**From apps on the same instance, over Beats.** Point Filebeat's or another
-Beat's Logstash output at the internal address, port `5044`:
+**Over Beats.** Point Filebeat's or another Beat's Logstash output at the
+instance address and the port you chose:
+
+```yaml
+output.logstash:
+  hosts: ["<your VPS address>:<chosen port>"]
+```
+
+From an app on the same instance, the internal name follows the project,
+environment and app names you install with:
 
 ```yaml
 output.logstash:
   hosts: ["cubeship-logstash-production-logstash:5044"]
 ```
 
-The internal name follows the project, environment and app names you install
-with. Beats has no authentication here, and needs none: **only HTTP reaches an
-app from outside**, so port `5044` — and a TCP, UDP or syslog input you add —
-is reachable from apps on the instance and from nowhere else. The HTTP input
+Beats has no authentication here, so protect the published port with your
+provider's firewall or a network restriction. The HTTP input
 answers inside the instance too, at
-`http://cubeship-logstash-production-logstash:8080`.
+`http://cubeship-logstash-production-logstash:8080`; Beats remains available
+there on port `5044`.
 
 ## Where events land
 

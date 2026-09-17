@@ -174,3 +174,15 @@ new release.
 The app is limited to 1 CPU and 2 GiB of memory, and Logstash's heap is 1 GiB.
 For heavier pipelines, raise `limits` in `template.yaml` and set `LS_JAVA_OPTS`
 to `-Xms2g -Xmx2g` or so, keeping the heap to about half the memory limit.
+
+---
+
+<!-- cubeship-crosslink -->
+
+## About Cubeship
+
+This is a template for [**Cubeship**](https://github.com/cubeshipd/cubeship) —
+a PaaS you run on your own server: `docker push`, and it is live, with HTTPS,
+a database beside it, and a second machine when one stops being enough.
+
+Browse every template at [cubeship.dev/templates](https://cubeship.dev/templates).
